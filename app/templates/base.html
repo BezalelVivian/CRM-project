@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}PulseCRM{% endblock %}</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="{{ url_for('static', path='css/style.css') }}">
+    {% block head %}{% endblock %}
+</head>
+<body>
+<div class="app-shell">
+    <aside class="sidebar">
+        <div class="brand">
+            <div class="brand-mark">P</div>
+            <div>
+                <strong>PulseCRM</strong>
+                <span>Client intelligence</span>
+            </div>
+        </div>
+
+        <nav class="nav">
+            <a href="/" class="{% if request.url.path == '/' %}active{% endif %}">
+                <span>⌂</span> Dashboard
+            </a>
+            <a href="/clients" class="{% if request.url.path.startswith('/clients') %}active{% endif %}">
+                <span>◫</span> Clients
+            </a>
+            <a href="/analysis" class="{% if request.url.path == '/analysis' %}active{% endif %}">
+                <span>◈</span> Analysis
+            </a>
+        </nav>
+
+        <div class="sidebar-bottom">
+            <div class="status-dot"></div>
+            <div>
+                <strong>System online</strong>
+                <span>MySQL connected</span>
+            </div>
+        </div>
+    </aside>
+
+    <main class="main">
+        <header class="topbar">
+            <div>
+                <p class="eyebrow">CUSTOMER RELATIONSHIP MANAGEMENT</p>
+                <h1>{% block page_title %}Dashboard{% endblock %}</h1>
+            </div>
+
+            <a class="btn btn-primary" href="/clients/new">+ Add client</a>
+        </header>
+
+        {% block content %}{% endblock %}
+    </main>
+</div>
+
+<script src="{{ url_for('static', path='js/app.js') }}"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

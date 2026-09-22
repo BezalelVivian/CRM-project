@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard · PulseCRM{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block content %}
+<section class="kpi-grid">
+    <article class="kpi-card">
+        <div class="kpi-icon purple">◫</div>
+        <div>
+            <span>Total clients</span>
+            <strong>{{ data.total_clients }}</strong>
+        </div>
+    </article>
+
+    <article class="kpi-card">
+        <div class="kpi-icon blue">₹</div>
+        <div>
+            <span>Pipeline budget</span>
+            <strong>₹{{ "{:,.0f}".format(data.total_budget) }}</strong>
+        </div>
+    </article>
+
+    <article class="kpi-card">
+        <div class="kpi-icon green">↗</div>
+        <div>
+            <span>Average budget</span>
+            <strong>₹{{ "{:,.0f}".format(data.average_budget) }}</strong>
+        </div>
+    </article>
+
+    <article class="kpi-card">
+        <div class="kpi-icon orange">●</div>
+        <div>
+            <span>Active prospects</span>
+            <strong>{{ data.status_counts.get("Prospect", 0) }}</strong>
+        </div>
+    </article>
+</section>
+
+<section class="dashboard-grid">
+    <article class="panel wide">
+        <div class="panel-header">
+            <div>
+                <p class="eyebrow">PIPELINE</p>
+                <h2>Client status overview</h2>
+            </div>
+            <a href="/analysis" class="text-link">Open analysis →</a>
+        </div>
+
+        <div class="status-bars">
+            {% for status in ["Lead", "Prospect", "Customer", "Churned"] %}
+            {% set count = data.status_counts.get(status, 0) %}
+            {% set percent = ((count / data.total_clients) * 100) if data.total_clients else 0 %}
+            <div class="status-row">
+                <div class="status-label">
+                    <span class="badge badge-{{ status|lower }}">{{ status }}</span>
+                    <strong>{{ count }}</strong>
+                </div>
+                <div class="progress">
+                    <span style="width: {{ percent }}%"></span>
+                </div>
+                <small>{{ "{:.0f}".format(percent) }}%</small>
+            </div>
+            {% endfor %}
+        </div>
+    </article>
+
+    <article class="panel">
+        <div class="panel-header">
+            <div>
+                <p class="eyebrow">QUICK ACTION</p>
+                <h2>Manage CRM</h2>
+            </div>
+        </div>
+
+        <div class="quick-actions">
+            <a href="/clients/new" class="quick-action">
+                <span>＋</span>
+                <div><strong>Add client</strong><small>Create a new CRM record</small></div>
+            </a>
+            <a href="/clients" class="quick-action">
+                <span>◫</span>
+                <div><strong>View clients</strong><small>Search and manage records</small></div>
+            </a>
+            <a href="/analysis" class="quick-action">
+                <span>◈</span>
+                <div><strong>Analyze data</strong><small>View charts and insights</small></div>
+            </a>
+        </div>
+    </article>
+</section>
+
+<section class="panel">
+    <div class="panel-header">
+        <div>
+            <p class="eyebrow">RECENT ACTIVITY</p>
+            <h2>Recently added clients</h2>
+        </div>
+        <a href="/clients" class="text-link">View all →</a>
+    </div>
+
+    {% if data.recent %}
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>Client</th>
+                    <th>Company</th>
+                    <th>Status</th>
+                    <th>Budget</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for client in data.recent %}
+                <tr>
+                    <td><strong>{{ client.name }}</strong><small>{{ client.email or "No email" }}</small></td>
+                    <td>{{ client.company or "—" }}</td>
+                    <td><span class="badge badge-{{ client.status|lower }}">{{ client.status }}</span></td>
+                    <td>₹{{ "{:,.0f}".format(client.budget) }}</td>
+                    <td>{{ client.client_date.strftime("%d %b %Y") }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+        <div class="empty">No clients yet. Add your first client to start building the CRM.</div>
+    {% endif %}
+</section>
+{% endblock %}

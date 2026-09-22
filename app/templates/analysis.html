@@ -1,0 +1,168 @@
+{% extends "base.html" %}
+
+{% block title %}Analysis · PulseCRM{% endblock %}
+{% block page_title %}Client analysis{% endblock %}
+
+{% block content %}
+<section class="analysis-hero">
+    <div>
+        <p class="eyebrow">BUSINESS INTELLIGENCE</p>
+        <h2>Understand your client pipeline.</h2>
+        <p>Use the charts below to inspect client distribution, budget concentration, acquisition sources and monthly activity.</p>
+    </div>
+    <a class="btn btn-primary" href="/clients">Manage clients →</a>
+</section>
+
+<section class="kpi-grid">
+    <article class="kpi-card">
+        <div class="kpi-icon purple">◫</div>
+        <div><span>Total clients</span><strong>{{ data.total_clients }}</strong></div>
+    </article>
+    <article class="kpi-card">
+        <div class="kpi-icon blue">₹</div>
+        <div><span>Total pipeline budget</span><strong>₹{{ "{:,.0f}".format(data.total_budget) }}</strong></div>
+    </article>
+    <article class="kpi-card">
+        <div class="kpi-icon green">₹</div>
+        <div><span>Average budget</span><strong>₹{{ "{:,.0f}".format(data.average_budget) }}</strong></div>
+    </article>
+</section>
+
+<section class="chart-grid">
+    <article class="panel chart-panel">
+        <div class="panel-header">
+            <div><p class="eyebrow">CLIENT MIX</p><h2>Clients by status</h2></div>
+        </div>
+        <div class="chart-wrap"><canvas id="statusChart"></canvas></div>
+    </article>
+
+    <article class="panel chart-panel">
+        <div class="panel-header">
+            <div><p class="eyebrow">VALUE</p><h2>Budget by status</h2></div>
+        </div>
+        <div class="chart-wrap"><canvas id="budgetChart"></canvas></div>
+    </article>
+
+    <article class="panel chart-panel wide-chart">
+        <div class="panel-header">
+            <div><p class="eyebrow">TREND</p><h2>Monthly client activity</h2></div>
+        </div>
+        <div class="chart-wrap large"><canvas id="monthlyChart"></canvas></div>
+    </article>
+
+    <article class="panel chart-panel">
+        <div class="panel-header">
+            <div><p class="eyebrow">ACQUISITION</p><h2>Clients by source</h2></div>
+        </div>
+        <div class="chart-wrap"><canvas id="sourceChart"></canvas></div>
+    </article>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+const analytics = {{ {
+    "status_counts": data.status_counts,
+    "status_budgets": data.status_budgets,
+    "monthly": data.monthly,
+    "sources": data.sources
+}|tojson }};
+
+const statuses = ["Lead", "Prospect", "Customer", "Churned"];
+const statusCounts = statuses.map(s => analytics.status_counts[s] || 0);
+const statusBudgets = statuses.map(s => analytics.status_budgets[s] || 0);
+
+new Chart(document.getElementById("statusChart"), {
+    type: "bar",
+    data: {
+        labels: statuses,
+        datasets: [{
+            label: "Clients",
+            data: statusCounts,
+            borderRadius: 8,
+            borderSkipped: false
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+            y: { beginAtZero: true, ticks: { precision: 0 } }
+        }
+    }
+});
+
+new Chart(document.getElementById("budgetChart"), {
+    type: "bar",
+    data: {
+        labels: statuses,
+        datasets: [{
+            label: "Budget",
+            data: statusBudgets,
+            borderRadius: 8,
+            borderSkipped: false
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: { display: false },
+            tooltip: {
+                callbacks: {
+                    label: ctx => " ₹" + Number(ctx.raw).toLocaleString("en-IN")
+                }
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: {
+                    callback: value => "₹" + Number(value).toLocaleString("en-IN")
+                }
+            }
+        }
+    }
+});
+
+new Chart(document.getElementById("monthlyChart"), {
+    type: "line",
+    data: {
+        labels: analytics.monthly.map(x => x.label),
+        datasets: [{
+            label: "New clients",
+            data: analytics.monthly.map(x => x.count),
+            tension: 0.35,
+            fill: true
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
+    }
+});
+
+new Chart(document.getElementById("sourceChart"), {
+    type: "doughnut",
+    data: {
+        labels: analytics.sources.map(x => x.source),
+        datasets: [{
+            data: analytics.sources.map(x => x.count),
+            borderWidth: 0
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: "65%",
+        plugins: {
+            legend: { position: "bottom" }
+        }
+    }
+});
+</script>
+{% endblock %}

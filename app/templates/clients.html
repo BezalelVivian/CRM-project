@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block title %}Clients · PulseCRM{% endblock %}
+{% block page_title %}Clients{% endblock %}
+
+{% block content %}
+<section class="panel">
+    <div class="toolbar">
+        <form class="filters" method="get" action="/clients">
+            <div class="search-box">
+                <span>⌕</span>
+                <input name="search" value="{{ search }}" placeholder="Search name, company, email...">
+            </div>
+
+            <select name="status">
+                {% for item in ["All", "Lead", "Prospect", "Customer", "Churned"] %}
+                    <option value="{{ item }}" {% if status == item %}selected{% endif %}>{{ item }}</option>
+                {% endfor %}
+            </select>
+
+            <button class="btn btn-secondary" type="submit">Filter</button>
+            <a class="btn btn-ghost" href="/clients">Reset</a>
+        </form>
+
+        <a class="btn btn-primary" href="/clients/new">+ Add client</a>
+    </div>
+
+    {% if clients %}
+    <div class="table-wrap">
+        <table class="clients-table">
+            <thead>
+                <tr>
+                    <th>Client</th>
+                    <th>Company</th>
+                    <th>Budget</th>
+                    <th>Status</th>
+                    <th>Source</th>
+                    <th>Date</th>
+                    <th class="actions-col">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for client in clients %}
+                <tr>
+                    <td>
+                        <div class="client-cell">
+                            <div class="avatar">{{ client.name[:1]|upper }}</div>
+                            <div>
+                                <strong>{{ client.name }}</strong>
+                                <small>{{ client.email or client.phone or "No contact info" }}</small>
+                            </div>
+                        </div>
+                    </td>
+                    <td>{{ client.company or "—" }}</td>
+                    <td><strong>₹{{ "{:,.0f}".format(client.budget) }}</strong></td>
+                    <td><span class="badge badge-{{ client.status|lower }}">{{ client.status }}</span></td>
+                    <td>{{ client.source or "—" }}</td>
+                    <td>{{ client.client_date.strftime("%d %b %Y") }}</td>
+                    <td>
+                        <div class="row-actions">
+                            <a class="icon-btn" title="Edit" href="/clients/{{ client.id }}/edit">✎</a>
+                            <button class="icon-btn danger" title="Delete"
+                                    onclick="deleteClient({{ client.id }}, '{{ client.name|replace("'", "\\'") }}')">⌫</button>
+                        </div>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+        <div class="empty">
+            <div class="empty-icon">◫</div>
+            <h3>No clients found</h3>
+            <p>Try changing your search/filter or create a new client.</p>
+            <a class="btn btn-primary" href="/clients/new">Add client</a>
+        </div>
+    {% endif %}
+</section>
+{% endblock %}

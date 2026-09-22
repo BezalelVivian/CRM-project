@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+
+{% block title %}{{ mode }} Client · PulseCRM{% endblock %}
+{% block page_title %}{{ mode }} client{% endblock %}
+
+{% block content %}
+<section class="form-layout">
+    <article class="panel form-panel">
+        <div class="panel-header">
+            <div>
+                <p class="eyebrow">CLIENT RECORD</p>
+                <h2>{{ "Update client details" if client else "Create a new client" }}</h2>
+            </div>
+            <a href="/clients" class="btn btn-ghost">← Back</a>
+        </div>
+
+        <form id="clientForm" class="client-form">
+            <div class="form-grid">
+                <label>
+                    Client name *
+                    <input id="name" name="name" required maxlength="120"
+                           value="{{ client.name if client else '' }}"
+                           placeholder="e.g. Arun Kumar">
+                </label>
+
+                <label>
+                    Date *
+                    <input id="client_date" name="client_date" type="date" required
+                           value="{{ client.client_date.isoformat() if client else '' }}">
+                </label>
+
+                <label>
+                    Email
+                    <input id="email" name="email" type="email" maxlength="255"
+                           value="{{ client.email if client else '' }}"
+                           placeholder="client@company.com">
+                </label>
+
+                <label>
+                    Phone
+                    <input id="phone" name="phone" maxlength="30"
+                           value="{{ client.phone if client else '' }}"
+                           placeholder="+91 98765 43210">
+                </label>
+
+                <label>
+                    Company
+                    <input id="company" name="company" maxlength="150"
+                           value="{{ client.company if client else '' }}"
+                           placeholder="Company name">
+                </label>
+
+                <label>
+                    Budget (₹)
+                    <input id="budget" name="budget" type="number" min="0" step="0.01"
+                           value="{{ client.budget if client else 0 }}"
+                           placeholder="50000">
+                </label>
+
+                <label>
+                    Status *
+                    <select id="status" name="status">
+                        {% for item in ["Lead", "Prospect", "Customer", "Churned"] %}
+                            <option value="{{ item }}"
+                            {% if (client and client.status == item) or (not client and item == "Lead") %}selected{% endif %}>
+                                {{ item }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </label>
+
+                <label>
+                    Source
+                    <select id="source" name="source">
+                        {% set current_source = client.source if client else "" %}
+                        {% for item in ["Website", "Referral", "LinkedIn", "Advertisement", "Cold Call", "Event", "Other"] %}
+                            <option value="{{ item }}" {% if current_source == item %}selected{% endif %}>{{ item }}</option>
+                        {% endfor %}
+                    </select>
+                </label>
+
+                <label class="full">
+                    Notes
+                    <textarea id="notes" name="notes" maxlength="2000"
+                              placeholder="Important client context, requirements, follow-up notes...">{{ client.notes if client else '' }}</textarea>
+                </label>
+            </div>
+
+            <div id="formError" class="form-error hidden"></div>
+
+            <div class="form-footer">
+                <a class="btn btn-ghost" href="/clients">Cancel</a>
+                <button class="btn btn-primary" type="submit">
+                    {{ "Save changes" if client else "Create client" }}
+                </button>
+            </div>
+        </form>
+    </article>
+
+    <aside class="panel tips-panel">
+        <p class="eyebrow">CRM TIP</p>
+        <h2>Keep client data useful.</h2>
+        <p>Use accurate statuses and budgets. The Analysis page uses these values to calculate your pipeline and charts.</p>
+
+        <div class="tip-list">
+            <div><strong>Lead</strong><span>Potential customer not yet qualified.</span></div>
+            <div><strong>Prospect</strong><span>Qualified opportunity in the pipeline.</span></div>
+            <div><strong>Customer</strong><span>Client has converted.</span></div>
+            <div><strong>Churned</strong><span>Previously active, now lost.</span></div>
+        </div>
+    </aside>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    window.editingClientId = {{ client.id if client else "null" }};
+</script>
+{% endblock %}
